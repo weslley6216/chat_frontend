@@ -1,0 +1,23 @@
+# Use uma imagem base do Node.js
+FROM node:20-alpine
+
+# Defina o diretório de trabalho
+WORKDIR /app
+
+# Copie os arquivos de dependências para dentro do container
+COPY package*.json ./
+
+# Instale as dependências do projeto
+RUN npm ci
+
+# Copie o arquivo de configuração do Vite explicitamente
+COPY vite.config.js ./
+
+# Copie o restante do código do frontend para o container
+COPY . .
+
+# Exponha a porta 4000
+EXPOSE 4000
+
+# Comando para iniciar o servidor de desenvolvimento
+CMD ["npm", "run", "dev"]
