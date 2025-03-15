@@ -1,23 +1,27 @@
-# Use a Node.js base image
 FROM node:20-alpine
 
+# Install bash
+RUN apk add --no-cache bash
+
 # Set the working directory
-WORKDIR /app
+WORKDIR /opt/app
 
-# Copy the dependency files into the container
-COPY package*.json ./
-
-# Install the project dependencies
+# Copy dependency files (package.json and package-lock.json) and install dependencies
+COPY --chown=node:node package*.json ./
 RUN npm ci
 
-# Copy the Vite configuration file
-COPY vite.config.js ./
+# Copy the rest of the frontend application code
+COPY --chown=node:node . .
 
-# Copy the rest of the frontend code into the container
-COPY . .
+# Copy the entrypoint script and ensure it's executable
+COPY --chown=node:node entrypoint.sh /usr/bin/entrypoint.sh
+RUN chmod +x /usr/bin/entrypoint.sh
 
-# Expose port 4000
+# Expose the port used by the development server
 EXPOSE 4000
 
-# Command to start the development server
-CMD ["npm", "run", "dev"]
+# Use the node user (default user in the base image)
+USER node
+
+# Use the entrypoint script for initialization and server startup
+ENTRYPOINT ["sh", "/usr/bin/entrypoint.sh"]
