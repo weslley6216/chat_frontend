@@ -8,7 +8,7 @@ WORKDIR /opt/app
 
 # Copy dependency files (package.json and package-lock.json) and install dependencies
 COPY --chown=node:node package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy the rest of the frontend application code
 COPY --chown=node:node . .
