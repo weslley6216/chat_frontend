@@ -4,7 +4,7 @@
       <h2>{{ selectedConversation.name }}</h2>
     </div>
 
-    <div class="chat-messages">
+    <div class="chat-messages" ref="messagesContainer">
       <div v-for="(message, index) in formattedMessages" :key="index"
         :class="['message', message.isCurrentUser ? 'sent' : 'received']">
         <span class="message-text">{{ message.content }}</span>
@@ -19,8 +19,10 @@
 </template>
 
 <script>
-import { fetchMessages, sendMessage } from '@/services/chatApi';
+import { nextTick } from 'vue';
+import { fetchMessages } from '@/services/chatApi';
 import { useUserStore } from '@/stores/user';
+import chatService from '@/services/chatService';
 
 export default {
   props: {
@@ -44,35 +46,58 @@ export default {
     }
   },
   watch: {
-    selectedConversation: "loadMessages"
+    selectedConversation: "fetchMessages"
   },
   created() {
-    this.loadMessages();
+    this.fetchMessages();
   },
   methods: {
-    async loadMessages() {
+    async fetchMessages() {
       if (!this.selectedConversation) return;
       try {
         this.messages = await fetchMessages(this.selectedConversation.id);
+        this.setupChatChannel();
+        this.scrollToBottom();
       } catch (error) {
         console.error("Error loading messages:", error);
       }
     },
+
     async sendMessage() {
       if (!this.newMessage.trim()) return;
 
+      const messageContent = this.newMessage.trim();
+
       try {
-        await sendMessage(this.selectedConversation.id, this.newMessage);
-        this.messages.push({
-          sender: this.currentUser,
-          content: this.newMessage,
-        });
-        this.newMessage = "";
+        await chatService.sendMessageApi(this.selectedConversation.id, messageContent);
+        chatService.sendMessageWebSocket(messageContent);
       } catch (error) {
         console.error("Error sending message:", error);
       }
+
+      this.newMessage = "";
+      this.$nextTick(() => this.scrollToBottom());
     },
+
+    setupChatChannel() {
+      chatService.setupChatChannel(this.selectedConversation.id, (receivedMessage) => {
+        this.messages.push({
+          sender: receivedMessage.sender,
+          content: receivedMessage.content,
+        });
+        this.$nextTick(() => this.scrollToBottom());
+      });
+    },
+
+    scrollToBottom() {
+      const messagesContainer = this.$refs.messagesContainer;
+      messagesContainer && nextTick(() => messagesContainer.scrollTop = messagesContainer.scrollHeight);
+    }
   },
+
+  beforeUnmount() {
+    chatService.unsubscribeChatChannel();
+  }
 };
 </script>
 
