@@ -3,22 +3,15 @@
     <h2 class="login-title">Welcome Back!</h2>
     <form @submit.prevent="handleLogin">
       <div class="input-group">
-        <input
-          v-model="username"
-          type="text"
-          placeholder="Email or Username"
-          class="input-field"
-          required
-        />
+        <input v-model="username" type="text" placeholder="Email or Username" class="input-field"
+          :class="{ 'error-border': errorMessage }" required />
       </div>
       <div class="input-group">
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Password"
-          class="input-field"
-          required
-        />
+        <input v-model="password" type="password" placeholder="Password" class="input-field"
+          :class="{ 'error-border': errorMessage }" required />
+      </div>
+      <div class="error-placeholder">
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </div>
       <div class="form-actions">
         <button type="submit" class="login-btn">Login</button>
@@ -39,6 +32,7 @@ export default {
     return {
       username: '',
       password: '',
+      errorMessage: '', // Adicionada variável de estado
     };
   },
   methods: {
@@ -49,7 +43,12 @@ export default {
         useUserStore().setUser(user);
         this.$router.push('/chat');
       } catch (error) {
-        console.error('Login failed:', error);
+        if (!error.response || error.response.status !== 401) {
+          this.errorMessage = 'An error occurred. Please try again.';
+          return;
+        }
+
+        this.errorMessage = 'Invalid email, username or password';
       }
     },
   },
@@ -58,24 +57,24 @@ export default {
 
 <style scoped>
 .login-card {
+  align-items: center;
   background-color: #fff;
   border-radius: 12px;
-  padding: 40px;
-  width: 100%;
-  max-width: 450px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  margin: 0 auto;
+  padding: 40px;
+  position: relative;
+  width: 100%;
 }
 
 .login-title {
-  text-align: center;
-  font-size: 2rem;
   color: #333;
-  margin-bottom: 20px;
+  font-size: 2rem;
   font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .input-group {
@@ -84,11 +83,11 @@ export default {
 }
 
 .input-field {
-  padding: 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
   border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
   outline: none;
+  padding: 12px;
   transition: border-color 0.3s;
 }
 
@@ -97,21 +96,21 @@ export default {
 }
 
 .form-actions {
-  width: 100%;
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .login-btn {
   background-color: #2cc007;
-  color: white;
-  padding: 12px 20px;
-  border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  border: none;
+  color: white;
   cursor: pointer;
-  width: 70%;
+  font-size: 1rem;
+  padding: 12px 20px;
   transition: background-color 0.3s ease;
+  width: 70%;
 }
 
 .login-btn:hover {
@@ -134,5 +133,19 @@ export default {
 
 .auth-footer a:hover {
   text-decoration: underline;
+}
+
+.error-placeholder {
+  height: 25px;
+}
+
+.error-message {
+  color: red;
+  margin: 0;
+  text-align: center;
+}
+
+.input-field.error-border {
+  border-color: red;
 }
 </style>
