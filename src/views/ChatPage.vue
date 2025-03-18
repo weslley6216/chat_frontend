@@ -2,25 +2,34 @@
   <div class="chat-container">
     <div class="sidebar">
       <h2>Conversations</h2>
-      <ul>
-        <li v-for="conversation in conversations" :key="conversation.id"
-          :class="{ active: conversation.id === selectedConversation.id }" @click="selectConversation(conversation)">
+      <ul v-if="conversations.length > 0">
+        <li
+          v-for="conversation in conversations"
+          :key="conversation.id"
+          :class="{ active: conversation.id === selectedConversation?.id }"
+          @click="selectConversation(conversation)"
+        >
           {{ conversation.name }}
         </li>
       </ul>
     </div>
 
-    <chat :selectedConversation="selectedConversation" />
+    <div class="chat-area">
+      <UserList v-if="conversations.length === 0" @conversation-started="handleConversationStarted" />
+      <chat v-else :selectedConversation="selectedConversation" />
+    </div>
   </div>
 </template>
 
 <script>
 import { fetchConversations } from '@/services/chatApi';
 import Chat from '@/components/Chat.vue';
+import UserList from '@/components/UserList.vue';
 
 export default {
   components: {
-    Chat
+    Chat,
+    UserList,
   },
   data() {
     return {
@@ -31,17 +40,22 @@ export default {
   async created() {
     try {
       this.conversations = await fetchConversations();
+      console.log('Conversations:', this.conversations); // Adicionado console.log
       if (this.conversations.length > 0) {
         this.selectedConversation = this.conversations[0];
       }
     } catch (error) {
-      console.error("Error loading conversations:", error);
+      console.error('Error loading conversations:', error);
     }
   },
   methods: {
     selectConversation(conversation) {
       this.selectedConversation = conversation;
-    }
+    },
+    handleConversationStarted(newConversation) {
+      this.conversations.push(newConversation);
+      this.selectedConversation = newConversation;
+    },
   },
 };
 </script>
@@ -68,12 +82,17 @@ export default {
 
 .sidebar li {
   padding: 10px;
-  cursor: pointer;
   border-bottom: 1px solid #ddd;
+  cursor: pointer;
 }
 
 .sidebar li:hover,
 .sidebar li.active {
   background: #ddd;
+}
+
+.chat-area {
+  flex: 1;
+  height: 90%;
 }
 </style>

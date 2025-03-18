@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { registerUser } from '@/services/auth';
+import { registerUser, loginUser } from '@/services/auth';
 import { useUserStore } from '@/stores/user';
 
 export default {
@@ -67,15 +67,21 @@ export default {
           return;
         }
 
-        useUserStore().setUser(response.user);
-        this.$emit('register-success');
+        await this.performLogin(this.username, this.password);
       } catch (error) {
         console.error('Registration failed:', error);
         this.errorMessage = 'Registration failed. Please try again.';
-        this.username = '';
-        this.email = '';
-        this.password = '';
-        this.passwordConfirmation = '';
+      }
+    },
+    async performLogin(username, password) {
+      try {
+        const { token, user } = await loginUser(username, password);
+        localStorage.setItem('authToken', token);
+        useUserStore().setUser(user);
+        this.$router.push('/chat');
+      } catch (loginError) {
+        console.error('Login failed after registration:', loginError);
+        this.errorMessage = 'Login failed after registration. Please try again.';
       }
     },
   },
