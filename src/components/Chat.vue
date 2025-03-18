@@ -5,14 +5,21 @@
     </div>
 
     <div class="chat-messages" ref="messagesContainer">
-      <div v-for="(message, index) in formattedMessages" :key="index"
-        :class="['message', message.isCurrentUser ? 'sent' : 'received']">
+      <div
+        v-for="(message, index) in formattedMessages"
+        :key="index"
+        :class="['message', message.isCurrentUser ? 'sent' : 'received']"
+      >
         <span class="message-text">{{ message.content }}</span>
       </div>
     </div>
 
     <div class="input-area">
-      <input v-model="newMessage" placeholder="Type a message..." @keyup.enter="sendMessage" />
+      <input
+        v-model="newMessage"
+        placeholder="Type a message..."
+        @keyup.enter="sendMessage"
+      />
       <button @click="sendMessage">Send</button>
     </div>
   </div>
@@ -31,7 +38,7 @@ export default {
   data() {
     return {
       messages: [],
-      newMessage: "",
+      newMessage: '',
     };
   },
   computed: {
@@ -39,27 +46,31 @@ export default {
       return useUserStore().username;
     },
     formattedMessages() {
-      return this.messages.map(message => ({
+      return this.messages.map((message) => ({
         ...message,
         isCurrentUser: message.sender === this.currentUser,
       }));
-    }
+    },
   },
   watch: {
-    selectedConversation: "fetchMessages"
-  },
-  created() {
-    this.fetchMessages();
+    selectedConversation: {
+      handler: 'fetchMessages',
+      immediate: true,
+    },
   },
   methods: {
     async fetchMessages() {
       if (!this.selectedConversation) return;
+
+      this.messages = [];
+
       try {
+        chatService.unsubscribeChatChannel();
         this.messages = await fetchMessages(this.selectedConversation.id);
         this.setupChatChannel();
         this.scrollToBottom();
       } catch (error) {
-        console.error("Error loading messages:", error);
+        console.error('Error loading messages:', error);
       }
     },
 
@@ -67,37 +78,50 @@ export default {
       if (!this.newMessage.trim()) return;
 
       const messageContent = this.newMessage.trim();
+      const userStore = useUserStore();
 
       try {
-        await chatService.sendMessageApi(this.selectedConversation.id, messageContent);
-        chatService.sendMessageWebSocket(messageContent);
+        const message = await chatService.sendMessageApi(
+          this.selectedConversation.id,
+          messageContent
+        );
+
+        chatService.sendMessageWebSocket(
+          userStore.id,
+          message.id,
+          this.selectedConversation.id
+        );
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error('Error sending message:', error);
       }
 
-      this.newMessage = "";
+      this.newMessage = '';
       this.$nextTick(() => this.scrollToBottom());
     },
 
     setupChatChannel() {
-      chatService.setupChatChannel(this.selectedConversation.id, (receivedMessage) => {
-        this.messages.push({
-          sender: receivedMessage.sender,
-          content: receivedMessage.content,
-        });
-        this.$nextTick(() => this.scrollToBottom());
-      });
+      chatService.setupChatChannel(
+        this.selectedConversation.id,
+        (receivedMessage) => {
+          this.messages.push({
+            sender: receivedMessage.sender,
+            content: receivedMessage.content,
+          });
+          this.$nextTick(() => this.scrollToBottom());
+        }
+      );
     },
 
     scrollToBottom() {
       const messagesContainer = this.$refs.messagesContainer;
-      messagesContainer && nextTick(() => messagesContainer.scrollTop = messagesContainer.scrollHeight);
-    }
+      messagesContainer &&
+        nextTick(() => (messagesContainer.scrollTop = messagesContainer.scrollHeight));
+    },
   },
 
   beforeUnmount() {
     chatService.unsubscribeChatChannel();
-  }
+  },
 };
 </script>
 
