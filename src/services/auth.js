@@ -26,6 +26,10 @@ export const logoutUser = () => {
   localStorage.removeItem('authToken');
   localStorage.removeItem('user');
   delete axios.defaults.headers.common['Authorization'];
+
+  const channel = new BroadcastChannel('auth');
+  channel.postMessage('logout');
+  channel.close();
 };
 
 export async function registerUser(username, email, password, passwordConfirmation) {
