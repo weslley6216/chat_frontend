@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <div class="input-area">
+    <div class="input-area" v-if="selectedConversation">
       <input
         v-model="newMessage"
         placeholder="Type a message..."
