@@ -1,7 +1,8 @@
 <template>
   <div class="user-list-card">
     <h2>Connect with a user to start chatting!</h2>
-    <ul>
+    <div v-if="users.length === 0">No new users to add at this time.</div>
+    <ul v-else class="user-list">
       <li v-for="user in users" :key="user.id">
         {{ user.username }}
         <button class="add-conversation-btn" @click="startConversation(user.id)">+</button>
@@ -17,6 +18,7 @@ export default {
   data() {
     return {
       users: [],
+      isLoading: false,
     };
   },
   mounted() {
@@ -24,18 +26,19 @@ export default {
   },
   methods: {
     async fetchUsers() {
+      this.isLoading = true;
       try {
         const response = await axios.get('/users');
         this.users = response.data;
-        console.log('Users fetched successfully:', this.users);
       } catch (error) {
         console.error('Error fetching users:', error);
+      } finally {
+        this.isLoading = false;
       }
     },
     async startConversation(userId) {
       try {
         const response = await axios.post('/conversations', { conversation: { user_id: userId } });
-        console.log('Conversation started successfully:', response.data);
         this.$emit('conversation-started', response.data);
       } catch (error) {
         console.error('Error starting conversation:', error);
@@ -47,24 +50,26 @@ export default {
 
 <style scoped>
 .user-list-card {
-  width: 50%;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
   border-radius: 10px;
+  border: 1px solid #ddd;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: auto;
+  max-height: 95%;
+  overflow-y: auto;
+  padding: 20px;
+  width: 50%;
 }
 
 .user-list-card h2 {
   margin-bottom: 20px;
 }
 
-.user-list-card ul {
+.user-list {
   list-style: none;
   padding: 0;
 }
 
-.user-list-card li {
+.user-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -72,7 +77,7 @@ export default {
   border-bottom: 1px solid #ddd;
 }
 
-.user-list-card li:hover {
+.user-list li:hover {
   background: #f0f0f0;
 }
 

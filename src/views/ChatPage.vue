@@ -1,7 +1,10 @@
 <template>
   <div class="chat-container">
     <div class="sidebar">
-      <h2>Conversations</h2>
+      <div class="sidebar-header">
+        <button class="add-conversation-btn" @click="showUserList">New Chat</button>
+        <h2>Conversations</h2>
+      </div>
       <ul v-if="conversations.length > 0">
         <li
           v-for="conversation in conversations"
@@ -15,7 +18,7 @@
     </div>
 
     <div class="chat-area">
-      <UserList v-if="conversations.length === 0" @conversation-started="handleConversationStarted" />
+      <UserList v-if="showUserListFlag" @conversation-started="handleConversationStarted" />
       <chat v-else :selectedConversation="selectedConversation" />
     </div>
   </div>
@@ -35,12 +38,12 @@ export default {
     return {
       conversations: [],
       selectedConversation: null,
+      showUserListFlag: false,
     };
   },
   async created() {
     try {
       this.conversations = await fetchConversations();
-      console.log('Conversations:', this.conversations); // Adicionado console.log
       if (this.conversations.length > 0) {
         this.selectedConversation = this.conversations[0];
       }
@@ -51,10 +54,15 @@ export default {
   methods: {
     selectConversation(conversation) {
       this.selectedConversation = conversation;
+      this.showUserListFlag = false;
     },
     handleConversationStarted(newConversation) {
       this.conversations.push(newConversation);
       this.selectedConversation = newConversation;
+      this.showUserListFlag = false;
+    },
+    showUserList() {
+      this.showUserListFlag = true;
     },
   },
 };
@@ -73,11 +81,21 @@ export default {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 .sidebar li {
@@ -94,5 +112,15 @@ export default {
 .chat-area {
   flex: 1;
   height: 90%;
+}
+
+.add-conversation-btn {
+  margin-top: 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>
