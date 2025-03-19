@@ -10,6 +10,8 @@ app.use(createPinia());
 app.use(router);
 app.mount('#app');
 
+document.body.style.overflow = 'hidden';
+
 const userStore = useUserStore();
 
 if (localStorage.getItem('authToken') && localStorage.getItem('user')) {
