@@ -23,7 +23,6 @@ export default {
   computed: {
     userStore() {
       const store = useUserStore();
-      console.log('userStore:', store);
       return store;
     },
   },
