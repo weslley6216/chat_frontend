@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
 
-# Display initialization message
 echo "Initializing chat_frontend environment..."
 
 # Only adjust permissions if necessary
@@ -11,6 +10,12 @@ if [ -w /opt/app ]; then
   chmod -R 775 /opt/app
 else
   echo "Skipping permissions adjustment; insufficient privileges."
+fi
+
+# Verifique se o Vite está instalado corretamente
+if ! command -v vite &> /dev/null; then
+  echo "Vite not found, installing it..."
+  npm install vite --save-dev
 fi
 
 # Start the development server
