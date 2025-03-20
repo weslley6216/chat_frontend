@@ -1,7 +1,7 @@
 <template>
   <div class="register-page">
     <div class="register-container">
-      <Register @register-success="handleRegisterSuccess" />
+      <Register id="register-component" @register-success="handleRegisterSuccess" />
     </div>
   </div>
 </template>
