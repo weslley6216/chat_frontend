@@ -1,5 +1,16 @@
-# Vue 3 + Vite
+# Chat Frontend
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Frontend da aplicação de chat em tempo real, construído com Vue.js.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Funcionalidades
+
+* Tela de login (`LoginPage`)
+* Tela de registro (`RegisterPage`)
+* Tela de chat (`ChatPage`)
+* Comunicação em tempo real via WebSockets
+
+## Tecnologias
+
+* Vue 3.5.13
+* Vite 6.2.2
+* Vitest
