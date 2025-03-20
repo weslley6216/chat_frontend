@@ -1,8 +1,8 @@
 <template>
   <div class="user-list-card">
     <h2>Connect with a user to start chatting!</h2>
-    <div v-if="users.length === 0">No new users to add at this time.</div>
-    <ul v-else class="user-list">
+    <div v-if="users?.length === 0">No new users to add at this time.</div>
+    <ul v-else-if="users" class="user-list">
       <li v-for="user in users" :key="user.id">
         {{ user.username }}
         <button class="add-conversation-btn" @click="startConversation(user.id)">+</button>
@@ -12,34 +12,29 @@
 </template>
 
 <script>
-import axios from '@/services/axios';
+import { fetchUsers, startConversation } from '@/services/userService';
 
 export default {
   data() {
     return {
       users: [],
-      isLoading: false,
     };
   },
-  mounted() {
+  async created() {
     this.fetchUsers();
   },
   methods: {
     async fetchUsers() {
-      this.isLoading = true;
       try {
-        const response = await axios.get('/users');
-        this.users = response.data;
+        this.users = await fetchUsers();
       } catch (error) {
         console.error('Error fetching users:', error);
-      } finally {
-        this.isLoading = false;
       }
     },
     async startConversation(userId) {
       try {
-        const response = await axios.post('/conversations', { conversation: { user_id: userId } });
-        this.$emit('conversation-started', response.data);
+        const response = await startConversation(userId);
+        this.$emit('conversation-started', response);
       } catch (error) {
         console.error('Error starting conversation:', error);
       }
