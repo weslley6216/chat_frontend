@@ -69,7 +69,6 @@ export default {
 
         await this.performLogin(this.username, this.password);
       } catch (error) {
-        console.error('Registration failed:', error);
         this.errorMessage = 'Registration failed. Please try again.';
       }
     },
@@ -80,7 +79,6 @@ export default {
         useUserStore().setUser(user);
         this.$router.push('/chat');
       } catch (loginError) {
-        console.error('Login failed after registration:', loginError);
         this.errorMessage = 'Login failed after registration. Please try again.';
       }
     },
