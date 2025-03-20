@@ -15,7 +15,6 @@ export const loginUser = async (username, password) => {
 
     return { token, user };
   } catch (error) {
-    console.error('Login failed:', error);
     throw error;
   }
 };
