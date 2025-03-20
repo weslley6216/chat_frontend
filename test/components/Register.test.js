@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import Register from '@/components/Register.vue';
 import { registerUser, loginUser } from '@/services/auth';
 import { useUserStore } from '@/stores/user';
+import router from '@/router';
 
 vi.mock('@/services/auth');
 vi.mock('@/stores/user', () => ({
@@ -10,14 +11,10 @@ vi.mock('@/stores/user', () => ({
 }));
 
 describe('Register.vue', () => {
-  let router;
   let userStore;
 
   beforeEach(async () => {
-    router = {
-      push: vi.fn(),
-      currentRoute: { value: { path: '/register' } },
-    };
+    router.push = vi.fn();
 
     userStore = {
       setUser: vi.fn(),
@@ -31,7 +28,7 @@ describe('Register.vue', () => {
 
   describe('when registration is successful', () => {
     it('should call handleRegister when the form is submitted', async () => {
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
       const handleRegisterSpy = vi.spyOn(wrapper.vm, 'handleRegister');
 
       await wrapper.find('form').trigger('submit.prevent');
@@ -40,7 +37,7 @@ describe('Register.vue', () => {
     });
 
     it('should pass correct values to handleRegister', async () => {
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
       const usernameInput = wrapper.find('input[placeholder="Username"]');
       const emailInput = wrapper.find('input[placeholder="Email"]');
       const passwordInput = wrapper.find('input[placeholder="Password"]');
@@ -61,7 +58,7 @@ describe('Register.vue', () => {
     it('should call registerUser and loginUser with correct values, set user, and redirect to /chat', async () => {
       registerUser.mockResolvedValue({ user: { id: 1, username: 'testuser' } });
       loginUser.mockResolvedValue({ token: 'mockToken', user: { id: 1, username: 'testuser' } });
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
 
       await wrapper.find('input[placeholder="Username"]').setValue('testuser');
       await wrapper.find('input[placeholder="Email"]').setValue('test@example.com');
@@ -78,7 +75,7 @@ describe('Register.vue', () => {
 
   describe('when registration fails', () => {
     it('should display error message for passwords do not match', async () => {
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
 
       await wrapper.find('input[placeholder="Password"]').setValue('password123');
       await wrapper.find('input[placeholder="Confirm Password"]').setValue('password456');
@@ -91,7 +88,7 @@ describe('Register.vue', () => {
 
     it('should display error message for registration error', async () => {
       registerUser.mockRejectedValue(new Error('Registration failed'));
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
 
       await wrapper.find('input[placeholder="Username"]').setValue('testuser');
       await wrapper.find('input[placeholder="Email"]').setValue('test@example.com');
@@ -105,7 +102,7 @@ describe('Register.vue', () => {
 
     it('should display error message for error response from registerUser', async () => {
       registerUser.mockResolvedValue({ error: { email: 'Email already taken' } });
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
 
       await wrapper.find('input[placeholder="Username"]').setValue('testuser');
       await wrapper.find('input[placeholder="Email"]').setValue('test@example.com');
@@ -120,7 +117,7 @@ describe('Register.vue', () => {
     it('should display error message for login error after registration', async () => {
       registerUser.mockResolvedValue({ user: { id: 1, username: 'testuser' } });
       loginUser.mockRejectedValue(new Error('Login failed'));
-      const wrapper = mount(Register, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Register, { global: { plugins: [router] } });
 
       await wrapper.find('input[placeholder="Username"]').setValue('testuser');
       await wrapper.find('input[placeholder="Email"]').setValue('test@example.com');
