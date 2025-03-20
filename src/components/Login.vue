@@ -1,14 +1,14 @@
 <template>
   <div class="login-card">
     <h2 class="login-title">Welcome Back!</h2>
-    <form @submit.prevent="handleLogin">
+    <form @submit.prevent="handleLogin" role="form">
       <div class="input-group">
         <input v-model="username" type="text" placeholder="Email or Username" class="input-field"
-          :class="{ 'error-border': errorMessage }" required />
+          :class="{ 'error-border': errorMessage }" required role="textbox" />
       </div>
       <div class="input-group">
         <input v-model="password" type="password" placeholder="Password" class="input-field"
-          :class="{ 'error-border': errorMessage }" required />
+          :class="{ 'error-border': errorMessage }" required role="textbox" />
       </div>
       <div class="error-placeholder">
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -18,7 +18,7 @@
       </div>
     </form>
     <div class="auth-footer">
-      <p>Don't have an account? <router-link to="/register">Sign Up</router-link></p>
+      <p>Don't have an account? <router-link to="/register" role="link">Sign Up</router-link></p>
     </div>
   </div>
 </template>

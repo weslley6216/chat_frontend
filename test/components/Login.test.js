@@ -1,9 +1,9 @@
-// test/components/Login.spec.js
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import Login from '@/components/Login.vue';
 import { loginUser } from '@/services/auth';
 import { useUserStore } from '@/stores/user';
+import router from '@/router';
 
 vi.mock('@/services/auth');
 vi.mock('@/stores/user', () => ({
@@ -11,14 +11,10 @@ vi.mock('@/stores/user', () => ({
 }));
 
 describe('Login.vue', () => {
-  let router;
   let userStore;
 
   beforeEach(async () => {
-    router = {
-      push: vi.fn(),
-      currentRoute: { value: { path: '/' } },
-    };
+    router.push = vi.fn();
 
     userStore = {
       setUser: vi.fn(),
@@ -32,7 +28,7 @@ describe('Login.vue', () => {
 
   describe('when login is successful', () => {
     it('should call handleLogin when the form is submitted', async () => {
-      const wrapper = mount(Login, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Login, { global: { plugins: [router] } });
       const handleLoginSpy = vi.spyOn(wrapper.vm, 'handleLogin');
 
       await wrapper.find('form').trigger('submit.prevent');
@@ -41,7 +37,7 @@ describe('Login.vue', () => {
     });
 
     it('should pass correct values to handleLogin', async () => {
-      const wrapper = mount(Login, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Login, { global: { plugins: [router] } });
       const usernameInput = wrapper.find('input[type="text"]');
       const passwordInput = wrapper.find('input[type="password"]');
 
@@ -55,7 +51,7 @@ describe('Login.vue', () => {
 
     it('should call loginUser with correct values, set user, and redirect to /chat', async () => {
       loginUser.mockResolvedValue({ token: 'mockToken', user: { id: 1, username: 'testuser' } });
-      const wrapper = mount(Login, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Login, { global: { plugins: [router] } });
 
       await wrapper.find('input[type="text"]').setValue('testuser');
       await wrapper.find('input[type="password"]').setValue('password');
@@ -73,7 +69,7 @@ describe('Login.vue', () => {
       const error = new Error('Invalid credentials');
       error.response = { status: 401 };
       loginUser.mockRejectedValue(error);
-      const wrapper = mount(Login, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Login, { global: { plugins: [router] } });
 
       await wrapper.find('input[type="text"]').setValue('testuser');
       await wrapper.find('input[type="password"]').setValue('wrongpassword');
@@ -86,7 +82,7 @@ describe('Login.vue', () => {
 
     it('should display generic error message for other errors', async () => {
       loginUser.mockRejectedValue(new Error('Network error'));
-      const wrapper = mount(Login, { global: { mocks: { $router: router } } });
+      const wrapper = mount(Login, { global: { plugins: [router] } });
 
       await wrapper.find('input[type="text"]').setValue('testuser');
       await wrapper.find('input[type="password"]').setValue('wrongpassword');
