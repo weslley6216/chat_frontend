@@ -1,45 +1,59 @@
-import { sendMessage } from './chatApi';
+import axios from './axios';
 import ChatChannel from '@/channels/chat_channel';
 
-export default {
-  chatChannel: null,
+let chatChannel = null;
 
-  setupChatChannel(conversationId, messageHandler) {
-    if (this.chatChannel) return;
-    this.chatChannel = new ChatChannel(
-      conversationId,
-      (data) => messageHandler(data.message)
+export async function fetchConversations() {
+  try {
+    const response = await axios.get('/conversations');
+    return response.data;
+  } catch (error) {
+    console.error('chatService: Error fetching conversations:', error);
+    throw error;
+  }
+}
+
+export async function fetchMessages(conversationId) {
+  try {
+    const response = await axios.get(`/conversations/${conversationId}/messages`);
+    return response.data;
+  } catch (error) {
+    console.error('chatService: Error fetching messages:', error);
+    throw error;
+  }
+}
+
+export async function sendMessageApi(conversationId, messageContent) {
+  try {
+    const response = await axios.post(
+      `/conversations/${conversationId}/messages`,
+      { message: { content: messageContent } }
     );
-    this.chatChannel.subscribe();
-  },
+    return response.data;
+  } catch (error) {
+    console.error('chatService: Error sending message:', error);
+    throw error;
+  }
+}
 
-  async sendMessageApi(conversationId, messageContent) {
-    try {
-      const message = await sendMessage(
-        conversationId,
-        messageContent
-      );
-      if (!message || !message.id) {
-        console.error('chatService: Error - Invalid API response:', message);
-        throw new Error('Invalid API response');
-      }
-      return message;
-    } catch (error) {
-      console.error('chatService: Error sending message to API:', error);
-      throw error;
-    }
-  },
+export function initializeChatSubscription(conversationId, messageHandler) {
+  if (chatChannel) return;
+  chatChannel = new ChatChannel(
+    conversationId,
+    (data) => messageHandler(data.message)
+  );
+  chatChannel.subscribe();
+}
 
-  sendMessageWebSocket(userId, messageId, conversationId) {
-    this.chatChannel?.sendMessage({
-      user_id: userId,
-      message_id: messageId,
-      conversation_id: conversationId,
-    });
-  },
+export function sendMessageWebSocket(userId, messageId, conversationId) {
+  chatChannel?.sendMessage({
+    user_id: userId,
+    message_id: messageId,
+    conversation_id: conversationId,
+  });
+}
 
-  unsubscribeChatChannel() {
-    this.chatChannel?.unsubscribe();
-    this.chatChannel = null;
-  },
-};
+export function unsubscribeChatChannel() {
+  chatChannel?.unsubscribe();
+  chatChannel = null;
+}

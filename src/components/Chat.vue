@@ -5,21 +5,14 @@
     </div>
 
     <div class="chat-messages" ref="messagesContainer">
-      <div
-        v-for="(message, index) in formattedMessages"
-        :key="index"
-        :class="['message', message.isCurrentUser ? 'sent' : 'received']"
-      >
+      <div v-for="(message, index) in formattedMessages" :key="index"
+        :class="['message', message.isCurrentUser ? 'sent' : 'received']">
         <span class="message-text">{{ message.content }}</span>
       </div>
     </div>
 
     <div class="input-area" v-if="selectedConversation">
-      <input
-        v-model="newMessage"
-        placeholder="Type a message..."
-        @keyup.enter="sendMessage"
-      />
+      <input v-model="newMessage" placeholder="Type a message..." @keyup.enter="sendMessage" />
       <button @click="sendMessage">Send</button>
     </div>
   </div>
@@ -27,9 +20,14 @@
 
 <script>
 import { nextTick } from 'vue';
-import { fetchMessages } from '@/services/chatApi';
+import {
+  fetchMessages,
+  sendMessageApi,
+  initializeChatSubscription,
+  sendMessageWebSocket,
+  unsubscribeChatChannel
+} from '@/services/chatService';
 import { useUserStore } from '@/stores/user';
-import chatService from '@/services/chatService';
 
 export default {
   props: {
@@ -65,7 +63,7 @@ export default {
       this.messages = [];
 
       try {
-        chatService.unsubscribeChatChannel();
+        unsubscribeChatChannel();
         this.messages = await fetchMessages(this.selectedConversation.id);
         this.setupChatChannel();
         this.scrollToBottom();
@@ -81,12 +79,12 @@ export default {
       const userStore = useUserStore();
 
       try {
-        const message = await chatService.sendMessageApi(
+        const message = await sendMessageApi(
           this.selectedConversation.id,
           messageContent
         );
 
-        chatService.sendMessageWebSocket(
+        sendMessageWebSocket(
           userStore.id,
           message.id,
           this.selectedConversation.id
@@ -100,7 +98,7 @@ export default {
     },
 
     setupChatChannel() {
-      chatService.setupChatChannel(
+      initializeChatSubscription(
         this.selectedConversation.id,
         (receivedMessage) => {
           this.messages.push({
@@ -120,8 +118,8 @@ export default {
   },
 
   beforeUnmount() {
-    chatService.unsubscribeChatChannel();
-  },
+    unsubscribeChatChannel();
+  }
 };
 </script>
 

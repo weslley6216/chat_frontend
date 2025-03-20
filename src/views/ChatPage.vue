@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { fetchConversations } from '@/services/chatApi';
+import { fetchConversations } from '@/services/chatService';
 import Chat from '@/components/Chat.vue';
 import UserList from '@/components/UserList.vue';
 
