@@ -32,7 +32,7 @@ export default {
     return {
       username: '',
       password: '',
-      errorMessage: '', // Adicionada variável de estado
+      errorMessage: '',
     };
   },
   methods: {
