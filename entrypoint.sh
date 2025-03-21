@@ -7,15 +7,14 @@ echo "Initializing chat_frontend environment..."
 if [ -w /opt/app ]; then
   echo "Adjusting permissions for /opt/app and its subdirectories..."
   chown -R node:node /opt/app
-  chmod -R 775 /opt/app
 else
   echo "Skipping permissions adjustment; insufficient privileges."
 fi
 
-# Verifique se o Vite está instalado corretamente
+# Verify that Vite is installed correctly
 if ! command -v vite &> /dev/null; then
   echo "Vite not found, installing it..."
-  npm install vite --save-dev
+  npm install vite --save-dev > /dev/null 2>&1
 fi
 
 # Start the development server
