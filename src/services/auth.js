@@ -1,8 +1,17 @@
 import axios from './axios';
 
-export const loginUser = async (username, password) => {
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export const loginUser = async (usernameOrEmail, password) => {
   try {
-    const response = await axios.post('/login', { username, password });
+    const loginField = isValidEmail(usernameOrEmail) ? 'email' : 'username';
+    const response = await axios.post('/login', {
+      [loginField]: usernameOrEmail,
+      password: password,
+    });
     const { token, user } = response.data;
 
     if (!token || !user) {
